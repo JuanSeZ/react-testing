@@ -5,6 +5,39 @@
 // (e.g. when passing enabled = true, assert that the useQuery hook is called
 // with an object that contains enabled: true).
 
-import { describe } from 'vitest';
+import { describe, expect, test, } from 'vitest'
+import { usePost } from './usePost';
+import {renderHook, waitFor} from "@testing-library/react";
+import {createReactQueryWrapper, server} from "@/test/index.js";
+import {http, HttpResponse} from "msw";
 
-describe.skip('usePost', () => {})
+
+describe('usePost', () => {
+
+    test('should retrieve post by id', async () => {
+        const id = 1;
+
+        server.use(
+            http.get(`https://jsonplaceholder.typicode.com/posts/${id}`, () => {
+                return HttpResponse.json({
+                    userId: 1,
+                    id: 1,
+                    title: 'title',
+                    body: 'body'
+                })
+            })
+        )
+
+        const { result } = renderHook(() => usePost(id), { wrapper: createReactQueryWrapper() })
+
+        await waitFor(() => expect(result.current.isSuccess).toBe(true))
+
+        expect(result.current.data).toEqual({
+            userId: 1,
+            id: 1,
+            title: expect.any(String),
+            body: expect.any(String)
+        })
+    });
+})
+
