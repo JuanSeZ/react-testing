@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@/test'
 import { describe, expect, test, vi } from 'vitest'
 import { AccountTab } from './AccountTab'
 
+
 // Task 3: finish tests for AccountTab.
 // You can remove the default values if needed (name Cianca and username dinos1337).
 // Also feel free to change one of the inputs to be of another type, such as email, or to add any other inputs and validators.
@@ -34,4 +35,25 @@ describe('AccountTab', () => {
 			})
 		})
 	})
+
+	test('should show error when name is empty', async () => {
+		const {getByPlaceholderText} = render(<AccountTab />)
+		fireEvent.change(getByPlaceholderText('username'), { target: { value: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum in hendrerit quam. Aenean faucibus magna felis, non suscipit augue finibus in. Sed sed mi at erat hendrerit maximus. ' } })
+		fireEvent.click(screen.getByRole('button', { name: 'Submit' }))
+
+		await waitFor(() => {
+			expect(screen.getByText('String must contain at most 50 character(s)')).toBeInTheDocument()
+		})
+	})
+
+	test('should show error when name is too long', async () => {
+		const {getByPlaceholderText} = render(<AccountTab />)
+		fireEvent.change(getByPlaceholderText('name'), { target: { value: '' } })
+		fireEvent.click(screen.getByRole('button', { name: 'Submit' }))
+
+		await waitFor(() => {
+			expect(screen.getByText('String must contain at least 2 character(s)')).toBeInTheDocument()
+		})
+	})
+
 })
